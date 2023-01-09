@@ -26,7 +26,10 @@ class CommentSerializer(serializers.ModelSerializer):
     Обращение к комментарию posts/<int:post_pk>/comments/<int:comment_pk>.
     """
 
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="username"
+    )
     post = serializers.SlugRelatedField(read_only=True, slug_field="pk")
 
     class Meta:
