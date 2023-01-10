@@ -39,9 +39,15 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
-    """Просмотр групп. Доступ наследуется из настроек проекта."""
+    """
+    Просмотр групп доступен всем пользователям.
+    Внесение изменений доступно только авторизированным пользователям.
+    """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+    )
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -71,13 +77,15 @@ class CommentViewSet(viewsets.ModelViewSet):
 class FollowViewSet(ListCreateViewSet):
     """
     Просмотр и изменение подписок на пользователей.
-    Доступно только для авторизированных пользователей.
+    Доступно только для авторизированных пользователей (глобальные настройки).
     """
     serializer_class = FollowSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    search_fields = ("following__username",)
-    permission_classes = (permissions.IsAuthenticated,)
+    search_fields = ("=following__username",)
 
     def get_queryset(self):
         """Изменение queryset для отображения данных по пользователю."""
-        return Follow.objects.filter(user=self.request.user)
+        return (Follow.objects
+                .select_related('following')
+                .filter(user=self.request.user)
+                )
