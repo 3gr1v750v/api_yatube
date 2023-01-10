@@ -1,3 +1,5 @@
+from typing import Any, Dict  # python 3.7
+
 from posts.models import Comment, Follow, Group, Post, User
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -56,11 +58,12 @@ class FollowSerializer(serializers.ModelSerializer):
                 fields=("user", "following"),
                 message="Вы уже подписаны на этого человека.",
             ),
-            serializers.UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=("user", "user"),
-                message="Нельзя подписываться на себя.",
-            ),
         ]
 
         fields = ("id", "user", "following")
+
+    def validate(self, attrs: Dict[str, Any]):
+        if self.context['request'].user == attrs['following']:
+            raise serializers.ValidationError(
+                'Подписка на самого себя запрещена.')
+        return attrs

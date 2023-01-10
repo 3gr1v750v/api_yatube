@@ -85,7 +85,4 @@ class FollowViewSet(ListCreateViewSet):
 
     def get_queryset(self):
         """Изменение queryset для отображения данных по пользователю."""
-        return (Follow.objects
-                .select_related('following')
-                .filter(user=self.request.user)
-                )
+        return self.request.user.follower.all()
